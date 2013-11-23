@@ -1,0 +1,18 @@
+{
+  "name": "zulip-node",
+  "version": "0.0.0",
+  "description": "Node bindings for Zulip API",
+  "author":"Paul <paulvstheworld@gmail.com>",
+  "private": true,
+  "main": "./zulip.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/paulvstheworld/zulip-node.git"
+  },
+  "dependencies": {
+    "request":"2.27.0"
+  },
+  "engines": {
+    "node": ">=0.10"
+  }
+}
