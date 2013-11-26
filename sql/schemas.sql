@@ -1,0 +1,14 @@
+CREATE DATABASE IF NOT EXISTS zulip 
+  DEFAULT CHARACTER SET utf8 
+  DEFAULT COLLATE utf8_general_ci;
+
+CREATE TABLE message_request (
+  `id` INT, 
+  `sender` VARCHAR(100), 
+  `recipients` VARCHAR(255), 
+  `message` VARCHAR(255), 
+  `type` INT, 
+  `alarm_time` DATETIME DEFAULT NULL, 
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
+);

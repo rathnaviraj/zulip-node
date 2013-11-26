@@ -10,7 +10,9 @@
     "url": "https://github.com/paulvstheworld/zulip-node.git"
   },
   "dependencies": {
-    "request":"2.27.0"
+    "request":"2.27.0",
+    "sequelize": "2.0.0-beta.1",
+    "mysql": "2.0.0-alpha9"
   },
   "engines": {
     "node": ">=0.10"
