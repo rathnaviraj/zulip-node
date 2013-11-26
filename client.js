@@ -6,6 +6,7 @@ function Client(email, apiKey) {
   this.email = email;
   this.apiKey = apiKey;  
   this.urls = {
+    users: 'https://api.zulip.com/v1/users',
     sendMessage: 'https://api.zulip.com/v1/messages',
     register: 'https://api.zulip.com/v1/register',
     events: 'https://api.zulip.com/v1/events'
@@ -107,6 +108,24 @@ Client.prototype.registerQueue = function(eventTypes, applyMarkdown, callback, e
 };
 
 
+Client.prototype.getUsers = function(callback, errback) {
+  request.get(this.urls.users, {
+    json: true,
+    auth: {
+      user: this.email,
+      pass: this.apiKey
+    },
+  }, function(err, resp, json) {
+    if(!err && resp.statusCode == 200) {
+      callback(json);
+    }
+    else {
+      errback(err);
+    }
+  })
+};
+
+
 Client.prototype.getEvents = function(dontBlock, callback, errback) {
   var url, qs = '';
   var qsObj = {
@@ -162,6 +181,7 @@ Client.prototype.getEvents = function(dontBlock, callback, errback) {
       
     }
     else {
+      console.log(json);
       errback(err);
     }
   });
