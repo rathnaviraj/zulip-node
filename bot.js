@@ -1,3 +1,4 @@
+var moment = require('moment');
 var Sequelize = require('sequelize');
 var Client = require('./client.js');
 
@@ -5,13 +6,17 @@ var CLIENT_USER = process.env.USER;
 var CLIENT_PASS = process.env.PASS;
 
 
+var TYPE_REMINDER = 0;
+var TYPE_FOOD = 1;
+var TYPE_SONG = 2;
+
 var sequelize = new Sequelize('zulip', 'root', '', {
   host: "localhost",
   port: 3306
 });
 
 
-var MessageRequest = sequelize.define('MessageRequest', {
+var MessageRequest = sequelize.define('message_request', {
   id: {
     type: Sequelize.INTEGER,
     autoIncrement: true,
@@ -22,11 +27,9 @@ var MessageRequest = sequelize.define('MessageRequest', {
   message: Sequelize.STRING,
   type: Sequelize.INTEGER,
   alarm_time: Sequelize.DATE,
-  updated_at: Sequelize.DATE,
-  created_at: Sequelize.DATE
 });
 
-var users = {};
+var _users = {};
 var client = new Client(CLIENT_USER, CLIENT_PASS);
 
 
@@ -81,7 +84,7 @@ var getResponse = function(fromName) {
   }
   
   return resp;
-}
+};
 
 var getImmediateResponse = function(from, fromName, content) {
   var strIndex = content.indexOf("sudo");
@@ -92,30 +95,59 @@ var getImmediateResponse = function(from, fromName, content) {
   return resp;
 };
 
+var getUserEmail = function(name) {
+  return _users[name].email;
+};
+
+var parseUserName = function(name) {
+  var regex = /[^@\*\*]+(?=\*\*$)/g;
+  return regex.exec(name)[0];
+}
+
+
+var getUserEmails = function(from, people) {
+  var emails = [];
+  var peopleArr = people.split(',');
+  var personName = '';
+  
+  for(var i=0, len=peopleArr.length; i<len; i++) {
+    if (peopleArr[i] === 'me'){
+      emails.push(from);      
+    }
+    else {
+      personName = parseUserName(peopleArr[i]);
+      emails.push(getUserEmail(personName));
+    }
+  }
+  
+  return emails;
+};
+
 var handleReminder = function(from, content) {
   // remind <PEOPLE> that <MESSAGE> in <LOCATION> @<TIME> 
   content = content.substring(7, content.length);
   
   var splitReminder = content.split(':');
   
-  console.log(splitReminder);
-  
   var people = splitReminder[0];
   var subject = splitReminder[1];
   var location = splitReminder[2];
-  var time = splitReminder[3];
+  var timeVal = splitReminder[3];
+  var recipients = getUserEmails(from, people).join(',');
   
-  console.log(people);
-  console.log(subject);
-  console.log(location);
-  console.log(time);
-  
-  // do something here;
+  //me, @**Paul Wang (F'13)**, @**Paul Wang (F'13)**
+  var message = [subject, 'in', location].join(' ');
+  MessageRequest.create({
+    sender: from,
+    recipients: recipients,
+    message: message,
+    type: TYPE_REMINDER,
+    alarm_time: moment(timeVal, "HH").toDate(),
+  }).success(function() {
+    console.log('successfully added message request');
+  });
 };
 
-var handleFood = function(from, content) {
-  console.log('requested food data');
-};
 
 client.onPrivateMessage(function(data) {
   var from = data.sender_email;
@@ -125,9 +157,6 @@ client.onPrivateMessage(function(data) {
   
   if (content.indexOf('remind') === 0) {
     handleReminder(from, content);
-  }
-  if (content.indexOf('food') === 0) {
-    handleFood(from, content);
   }
   
   // var resp = getImmediateResponse(from, fromName, content);
@@ -145,7 +174,7 @@ var getEvents = function() {
     function(resp) {
       setTimeout(function() {
         getEvents();
-      }, 1000);
+      }, 5000);
       
     }, function(err) {
       console.log('ERROR getEvents');
@@ -153,7 +182,7 @@ var getEvents = function() {
       
       setTimeout(function() {
         registerQueue();
-      }, 1000);
+      }, 5000);
     });
 };
 
@@ -173,13 +202,57 @@ var registerQueue = function() {
 };
 
 
+
+var sendRequest = function(request) {
+  var recipients = request.recipients.split(',');
+  
+  for(var i, len=recipients.length; i<len; i++) {
+    client.sendPrivateMessage(
+      recipients[i], request.message, 
+      function(resp) {
+        request.alerted = 1;
+        request.save().success(function() {
+          console.log('sent message request for ' + request.id);
+        });
+      }, function(err) {
+        console.log('error');
+        console.log(err);
+      });
+  }
+};
+
+var handleOpenRequests = function(requests) {
+  for(var i=0, len=requests.length; i<len; i++) {
+    sendRequest(requests[i]);
+  }
+}
+
+var findOpenRequests = function() {
+  var currTime = moment()
+  MessageRequest.findAll({
+    where: { 
+      alerted:0, 
+      alarm_time: { lte: moment().toDate() } 
+    }
+  }).success(handleOpenRequests);
+  
+  setTimeout(function() {
+    findOpenRequests();
+  }, 5000);
+};
+
+findOpenRequests();
+
+
+
+
 client.getUsers(function(data) {
   var members = data.members;
   
-  console.log('SUCCESS');
+  console.log('SUCCESS getUsers');
   
   for(var i=0, len=members.length; i<len; i++) {
-    users[members[i].full_name] = {
+    _users[members[i].full_name] = {
       isBot: members[i].is_bot,
       isActive: members[i].is_active,
       fullName: members[i].full_name,
