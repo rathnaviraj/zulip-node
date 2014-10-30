@@ -54,14 +54,18 @@ Client.prototype.sendMessage = function(opts, callback) {
   }, function(err, resp, json) {
     if (err) {
       self.emit('error', err);
-      return callback(err, null);
+
+      if (callback)
+        return callback(err, null);
     }
     else if (resp.statusCode !== 200) {
       self.emit('error', resp.statusCode + ': ' + resp.body.msg);
-      return callback(true, null);
+      if (callback)
+        return callback(true, null);
     }
 
-    callback(null, json);
+    if (callback)
+      callback(null, json);
   });
 };
 
@@ -139,6 +143,9 @@ Client.prototype.registerQueue = function(opts, watch, watchOpts) {
  */
 Client.prototype.getUsers = function(callback) {
   var self = this;
+
+  if (!callback)
+    return self.emit('error', 'getUsers requires a callback');
 
   request.get(this.urls.users, {
     json: true,
