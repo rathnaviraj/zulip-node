@@ -32,24 +32,24 @@ function Client(email, apiKey) {
 util.inherits(Client, EventEmitter);
 
 
-Client.prototype.sendMessage = function(type, to, subject, content, callback, errback) {
+Client.prototype.sendMessage = function(opts, callback) {
+  var self = this;
+
   request.post(this.urls.sendMessage, {
     json:true,
     auth: { user: this.email, pass: this.apiKey },
-    form: {
-      type: type,
-      to: to,
-      subject: subject,
-      content: content
-    }
+    form: opts
   }, function(err, resp, json) {
-    if(!err && resp.statusCode == 200) {
-      callback(json);
-      //{ msg: '', result: 'success', id: 13164733 }
+    if (err) {
+      self.emit('error', err);
+      return callback(err, null);
     }
-    else {
-      errback(err);
+    else if (resp.statusCode !== 200) {
+      self.emit('error', resp.statusCode + ': ' + resp.body.msg);
+      return callback(true, null);
     }
+
+    callback(null, json);
   });
 };
 
@@ -99,7 +99,9 @@ Client.prototype.registerQueue = function(opts, watch, watchOpts) {
 };
 
 
-Client.prototype.getUsers = function(callback, errback) {
+Client.prototype.getUsers = function(callback) {
+  var self = this;
+
   request.get(this.urls.users, {
     json: true,
     auth: {
@@ -108,10 +110,19 @@ Client.prototype.getUsers = function(callback, errback) {
     },
   }, function(err, resp, json) {
     if(!err && resp.statusCode == 200) {
-      callback(json);
+      return callback(null, json);
     }
     else {
-      errback(err);
+      callback(err, null);
+    }
+
+    if (err) {
+      self.emit('error', err);
+      return callback(err, null);
+    }
+    else if (resp.status !== 200) {
+      self.emit('error', resp.statusCode + ': ' + resp.body.msg);
+      return callback(resp.body, null);
     }
   });
 };
