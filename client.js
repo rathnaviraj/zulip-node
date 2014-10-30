@@ -54,13 +54,17 @@ Client.prototype.sendMessage = function(opts, callback) {
 };
 
 
-Client.prototype.sendStreamMessage = function(to, subject, content, callback, errback) {
-  this.sendMessage('stream', to, subject, content, callback, errback);
+Client.prototype.sendStreamMessage = function(opts, callback) {
+  opts.type = 'stream';
+
+  this.sendMessage(opts, callback);
 };
 
 
-Client.prototype.sendPrivateMessage = function(to, content, callback, errback) {
-  this.sendMessage('private', to, null, content, callback, errback);
+Client.prototype.sendPrivateMessage = function(opts, callback) {
+  opts.type = 'private';
+
+  this.sendMessage(opts, callback);
 };
 
 
