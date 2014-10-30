@@ -32,36 +32,6 @@ function Client(email, apiKey) {
 util.inherits(Client, EventEmitter);
 
 
-Client.prototype.onPresence = function(callback) {
-  this.presenceCallbacks.push(callback);
-};
-Client.prototype.onPrivateMessage = function(callback) {
-  this.privateMessageCallbacks.push(callback);
-};
-Client.prototype.onStreamMessage = function(callback) {
-  this.streamMessageCallbacks.push(callback);
-};
-
-
-Client.prototype.handlePresence = function(event) {
-  for(var i=0, len=this.presenceCallbacks.length; i<len; i++) {
-    this.presenceCallbacks[i](event);
-  }
-};
-
-Client.prototype.handlePrivateMessage = function(event) {
-  for(var i=0, len=this.privateMessageCallbacks.length; i<len; i++) {
-    this.privateMessageCallbacks[i](event.message);
-  }
-};
-
-Client.prototype.handleStreamingMessage = function(event) {
-  for(var i=0, len=this.streamMessageCallbacks.length; i<len; i++) {
-    this.streamMessageCallbacks[i](event.message);
-  }
-};
-
-
 Client.prototype.sendMessage = function(type, to, subject, content, callback, errback) {
   request.post(this.urls.sendMessage, {
     json:true,
