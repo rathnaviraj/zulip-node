@@ -3,7 +3,7 @@
 var querystring = require('querystring'),
     request = require('request'),
     EventEmitter = require('events').EventEmitter,
-    util = require('utils');
+    util = require('util');
 
 
 function Client(email, apiKey) {
@@ -92,28 +92,24 @@ Client.prototype.sendPrivateMessage = function(to, content, callback, errback) {
 };
 
 
-Client.prototype.registerQueue = function(eventTypes, applyMarkdown, callback, errback) {
-  var form = {};
-  
-  // apply optional keys if available
-  if (eventTypes) {
-    form.event_types = eventTypes;
-  }
-  if (!!applyMarkdown) {
-    form.apply_markdown = applyMarkdown;
+Client.prototype.registerQueue = function(opts) {
+  var self = this;
+
+  if (!opts) {
+    opts = {};
   }
   
   request.post(this.urls.register, {
     json: true,
     auth: { user: this.email, pass: this.apiKey },
-    form: form,
-  }, function(err, resp, json) {
-    if(!err && resp.statusCode == 200) {
-      callback(json);
-    }
-    else {
-      errback(err);
-    }
+    form: opts,
+  }, function(err, resp) {
+    if (err || resp.statusCode !== 200)
+      return self.emit('error', err);
+
+    self.queueId = resp.queue_id;
+    self.lastEventId = resp.last_event_id;
+    self.emit('registered', resp.body);
   });
 };
 
@@ -132,7 +128,7 @@ Client.prototype.getUsers = function(callback, errback) {
     else {
       errback(err);
     }
-  })
+  });
 };
 
 
