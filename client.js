@@ -1,8 +1,15 @@
-var querystring = require('querystring');
-var request = require('request');
+'use strict';
+
+var querystring = require('querystring'),
+    request = require('request'),
+    EventEmitter = require('events').EventEmitter,
+    util = require('utils');
 
 
 function Client(email, apiKey) {
+  // Call the EventEmitter constructor on this
+  EventEmitter.call(this);
+
   this.email = email;
   this.apiKey = apiKey;  
   this.urls = {
@@ -17,7 +24,10 @@ function Client(email, apiKey) {
   this.presenceCallbacks = [];
   this.queueId = null;
   this.lastEventId = -1;
-};
+}
+
+// Inherit the EventEmitter prototype
+util.inherits(Client, EventEmitter);
 
 
 Client.prototype.onPresence = function(callback) {
