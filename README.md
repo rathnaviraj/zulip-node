@@ -19,6 +19,11 @@ Client constructor
   * [client.registerQueue(opts, event_types, [watch], [watchOpts])](#Client#registerQueue)
   * [client.getUsers(callback)](#Client#getUsers)
   * [client.getEvents([watchOpts])](#Client#getEvents)
+  * [event: "registered"](#Client#event_registered)
+  * [event: "error"](#Client#event_error)
+  * [event: "event"](#Client#event_event)
+  * [event: "message"](#Client#event_message)
+  * [event: "presence"](#Client#event_presence)
 
 <a name="new_Client"></a>
 ##new Client(email, apiKey)
@@ -92,5 +97,35 @@ Gets events from the subscribed queue
   - \[queueId=this.queueId\] `String` - The ID of a queue that you registered via registerQueue().  
   - \[lastEventId=this.lastEventId\] `String` - The highest event ID in this queue that you've received and wish to acknowledge.  
   - \[dontBlock=false\] `String` - set to “true” if the client is requesting a nonblocking reply. If not specified, the request will block until either a new event is available or a few minutes have passed, in which case the server will send the client a heartbeat event.  
+
+<a name="Client#event_registered"></a>
+##event: "registered"
+**Properties**
+
+- response `Object` - Contains the response from the Zulip API  
+
+<a name="Client#event_error"></a>
+##event: "error"
+**Properties**
+
+- err `Object` | `String` - Either an object returned from another call or a description of the error  
+
+<a name="Client#event_event"></a>
+##event: "event"
+**Properties**
+
+- event `Object` - Contains all details of an event received from Zulip  
+
+<a name="Client#event_message"></a>
+##event: "message"
+**Properties**
+
+- message `Object` - Contains message details  
+
+<a name="Client#event_presence"></a>
+##event: "presence"
+**Properties**
+
+- event `Object` - Contains presence event details  
 
 

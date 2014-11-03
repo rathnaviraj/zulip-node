@@ -226,3 +226,28 @@ Client.prototype.getEvents = function(watch, watchOpts) {
 
 
 module.exports = Client;
+
+/**
+ * @event Client#registered
+ * @property {Object} response Contains the response from the Zulip API
+ */
+
+/**
+ * @event Client#error
+ * @property {Object|String} err Either an object returned from another call or a description of the error
+ */
+
+/**
+ * @event Client#event
+ * @property {Object} event Contains all details of an event received from Zulip
+ */
+
+/**
+ * @event Client#message
+ * @property {Object} message Contains message details
+ */
+
+/**
+ * @event Client#presence
+ * @property {Object} event Contains presence event details
+ */
