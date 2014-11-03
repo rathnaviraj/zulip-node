@@ -4,7 +4,7 @@
   "description": "Node bindings for Zulip API",
   "author":"Paul <paulvstheworld@gmail.com>",
   "private": true,
-  "main": "./zulip.js",
+  "main": "./client.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/paulvstheworld/zulip-node.git"
