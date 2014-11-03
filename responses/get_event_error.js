@@ -1,1 +1,0 @@
-{ msg: 'Missing \'queue_id\' argument', result: 'error' }
