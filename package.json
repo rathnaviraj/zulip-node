@@ -2,7 +2,7 @@
   "name": "zulip-node",
   "version": "0.0.0",
   "description": "Node bindings for Zulip API",
-  "author":"Paul <paulvstheworld@gmail.com>",
+  "author": "Paul <paulvstheworld@gmail.com>",
   "private": true,
   "main": "./client.js",
   "repository": {
@@ -10,9 +10,16 @@
     "url": "https://github.com/paulvstheworld/zulip-node.git"
   },
   "dependencies": {
-    "request":"2.27.0",
+    "request": "2.27.0"
   },
   "engines": {
     "node": ">=0.10"
+  },
+  "devDependencies": {
+    "jsdoc": "^3.3.0-alpha2",
+    "jsdoc-to-markdown": "^0.5.9"
+  },
+  "scripts": {
+    "docs": "jsdoc2md -t README.hbs client.js > README.md"
   }
 }
