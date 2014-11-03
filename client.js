@@ -22,14 +22,8 @@ function Client(email, apiKey) {
     register: 'https://api.zulip.com/v1/register',
     events: 'https://api.zulip.com/v1/events'
   };
-  
-  this.streamMessageCallbacks = [];
-  this.privateMessageCallbacks = [];
-  this.presenceCallbacks = [];
   this.queueId = null;
   this.lastEventId = -1;
-  this.rateLimit = null;
-  this.watchInterval = null;
 }
 
 // Inherit the EventEmitter prototype
