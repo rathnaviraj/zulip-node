@@ -20,7 +20,8 @@ function Client(email, apiKey) {
     users: 'https://api.zulip.com/v1/users',
     sendMessage: 'https://api.zulip.com/v1/messages',
     register: 'https://api.zulip.com/v1/register',
-    events: 'https://api.zulip.com/v1/events'
+    events: 'https://api.zulip.com/v1/events',
+    streams: 'https://api.zulip.com/v1/streams'
   };
   this.queueId = null;
   this.lastEventId = -1;
@@ -221,6 +222,32 @@ Client.prototype.getEvents = function(watch, watchOpts) {
           break;
       }
     });
+  });
+};
+
+/**
+ * Gets a list of all public streams
+ * @param  {Function} callback Callback function with (err, streams) properties
+ */
+Client.prototype.getStreams = function(callback) {
+  var self = this;
+
+  if (!callback)
+    return self.emit('error', 'getStreams requires a callback');
+
+  request.get(this.urls.streams, {
+    json: true,
+    auth: {
+      user: this.email,
+      pass: this.apiKey
+    }
+  }, function(err, resp, json) {
+    if (err)
+      return self.emit('error', err);
+    else if (resp.statusCode !== 200)
+      return self.emit('error', resp.statusCode + ': ' + resp.body.msg);
+
+    callback(null, json);
   });
 };
 

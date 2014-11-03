@@ -19,6 +19,7 @@ Client constructor
   * [client.registerQueue(opts, event_types, [watch], [watchOpts])](#Client#registerQueue)
   * [client.getUsers(callback)](#Client#getUsers)
   * [client.getEvents([watchOpts])](#Client#getEvents)
+  * [client.getStreams(callback)](#Client#getStreams)
   * [event: "registered"](#Client#event_registered)
   * [event: "error"](#Client#event_error)
   * [event: "event"](#Client#event_event)
@@ -97,6 +98,14 @@ Gets events from the subscribed queue
   - \[queueId=this.queueId\] `String` - The ID of a queue that you registered via registerQueue().  
   - \[lastEventId=this.lastEventId\] `String` - The highest event ID in this queue that you've received and wish to acknowledge.  
   - \[dontBlock=false\] `String` - set to “true” if the client is requesting a nonblocking reply. If not specified, the request will block until either a new event is available or a few minutes have passed, in which case the server will send the client a heartbeat event.  
+
+<a name="Client#getStreams"></a>
+##client.getStreams(callback)
+Gets a list of all public streams
+
+**Params**
+
+- callback `function` - Callback function with (err, streams) properties  
 
 <a name="Client#event_registered"></a>
 ##event: "registered"
