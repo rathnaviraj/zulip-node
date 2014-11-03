@@ -125,15 +125,9 @@ Client.prototype.registerQueue = function(opts, watch, watchOpts) {
     self.lastEventId = json.last_event_id;
     self.emit('registered', json);
 
-    if (watch) {
-      watchOpts = watchOpts || {};
+    if (watch)
+      self.getEvents(true, watchOpts);
 
-      // Assuming the rate limit is per minute
-      var interval = Math.floor(self.rateLimit / 60) * 1000;
-      self.watchInterval = setInterval(function() {
-        self.getEvents(watchOpts);
-      }, interval);
-    }
   });
 };
 
@@ -179,13 +173,15 @@ Client.prototype.getUsers = function(callback) {
  * @param {String} [watchOpts.lastEventId = this.lastEventId] The highest event ID in this queue that you've received and wish to acknowledge.
  * @param {String} [watchOpts.dontBlock = false] set to “true” if the client is requesting a nonblocking reply. If not specified, the request will block until either a new event is available or a few minutes have passed, in which case the server will send the client a heartbeat event.
  */
-Client.prototype.getEvents = function(watchOpts) {
+Client.prototype.getEvents = function(watch, watchOpts) {
+  watchOpts = watchOpts || {};
+
   var qsObj = {
     queue_id: watchOpts.queueId || this.queueId,
     last_event_id: watchOpts.lastEventId || this.lastEventId,
     dont_block: watchOpts.dontBlock || false
   };
-  
+
   var qs = querystring.stringify(qsObj),
       url = [this.urls.events, qs].join('?');
 
@@ -202,8 +198,22 @@ Client.prototype.getEvents = function(watchOpts) {
       return self.emit('error', err);
     else if (resp.statusCode !== 200)
       return self.emit('error', resp.statusCode + ': ' + resp.body.msg);
-    
+
     var events = json.events;
+
+    // set lastEventId
+    if(events.length > 0) {
+      self.lastEventId = events[events.length -1].id;
+    }
+
+    if (watch) {
+      var rateLimit = resp.headers['x-ratelimit-limit'] || 120,
+          interval = Math.floor(rateLimit / 60) * 1500;
+
+      setTimeout(function() {
+        self.getEvents(true, watchOpts);
+      }, interval);
+    }
 
     events.forEach(function(event) {
       self.emit('event', event);
@@ -217,11 +227,6 @@ Client.prototype.getEvents = function(watchOpts) {
           break;
       }
     });
-
-    // set lastEventId
-    if(events.length > 0) {
-      self.lastEventId = events[events.length -1].id;
-    }
   });
 };
 
