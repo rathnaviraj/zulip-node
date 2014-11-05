@@ -21,7 +21,8 @@ function Client(email, apiKey) {
     sendMessage: 'https://api.zulip.com/v1/messages',
     register: 'https://api.zulip.com/v1/register',
     events: 'https://api.zulip.com/v1/events',
-    streams: 'https://api.zulip.com/v1/streams'
+    streams: 'https://api.zulip.com/v1/streams',
+    subscriptions: 'https://api.zulip.com/v1/users/me/subscriptions'
   };
   this.queueId = null;
   this.lastEventId = -1;
@@ -248,6 +249,32 @@ Client.prototype.getStreams = function(callback) {
       return self.emit('error', resp.statusCode + ': ' + resp.body.msg);
 
     callback(null, json);
+  });
+};
+
+Client.prototype.getSubscriptions = function(callback) {
+  var self = this;
+
+  if (!callback)
+    return self.emit('error', 'getSubscriptions requires a callback');
+
+  request.get(this.urls.subscriptions, {
+    json: true,
+    auth: {
+      user: this.email,
+      pass: this.apiKey
+    }
+  }, function(err, resp, json) {
+    if (err) {
+      callback(err, null);
+      return self.emit('error', err);
+    }
+    else if (resp.statusCode !== 200) {
+      callback(resp.body.msg, null);
+      return self.emit('error', resp.statusCode + ': ' + resp.body.msg);
+    }
+
+    callback(null, json.subscriptions);
   });
 };
 
