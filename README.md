@@ -17,9 +17,16 @@ Client constructor
   * [client.sendStreamMessage(opts, callback)](#Client#sendStreamMessage)
   * [client.sendPrivateMessage(opts, callback)](#Client#sendPrivateMessage)
   * [client.registerQueue(opts, event_types, [watch], [watchOpts])](#Client#registerQueue)
+  * [client.deregisterQueue(queueId, [callback])](#Client#deregisterQueue)
   * [client.getUsers(callback)](#Client#getUsers)
   * [client.getEvents([watchOpts])](#Client#getEvents)
   * [client.getStreams(callback)](#Client#getStreams)
+  * [client.getSubscriptions(callback)](#Client#getSubscriptions)
+  * [client.updateSubscriptions(opts, [callback])](#Client#updateSubscriptions)
+  * [client.me(callback)](#Client#me)
+  * [client.setPresence(presence, [callback])](#Client#setPresence)
+  * [client.getStreamMembers(stream, callback)](#Client#getStreamMembers)
+  * [client.updateMessage(opts, [callback])](#Client#updateMessage)
   * [event: "registered"](#Client#event_registered)
   * [event: "error"](#Client#event_error)
   * [event: "event"](#Client#event_event)
@@ -80,6 +87,15 @@ Register to receive Zulip events
 - \[watch=false\] `Boolean` - If true, will automatically poll for events  
 - \[watchOpts\] `Object` - Optional set of options to be passed to getEvents while polling  
 
+<a name="Client#deregisterQueue"></a>
+##client.deregisterQueue(queueId, [callback])
+Deregisters from a queue
+
+**Params**
+
+- queueId `String` - Queue ID  
+- \[callback\] `function` - Optional callback with (err, response)  
+
 <a name="Client#getUsers"></a>
 ##client.getUsers(callback)
 Gets a list of all Zulip users in the realm
@@ -106,6 +122,63 @@ Gets a list of all public streams
 **Params**
 
 - callback `function` - Callback function with (err, streams) properties  
+
+<a name="Client#getSubscriptions"></a>
+##client.getSubscriptions(callback)
+List stream subscriptions
+
+**Params**
+
+- callback `function` - Callback with (err, subscriptions)  
+
+<a name="Client#updateSubscriptions"></a>
+##client.updateSubscriptions(opts, [callback])
+Adds or removes stream subscriptions
+
+**Params**
+
+- opts `Object` - Object containing subscription additions and deletions  
+  - additions `Array` - Array of streams to subscribe to  
+  - deletions `Array` - Array of streams to unsubscribe from  
+- \[callback\] `function` - Optional callback with (err, response)  
+
+<a name="Client#me"></a>
+##client.me(callback)
+Gets profile information such as max_message_id, pointer, and client_id
+
+**Params**
+
+- callback `function` - Callback with (err, response)  
+
+<a name="Client#setPresence"></a>
+##client.setPresence(presence, [callback])
+Sets presence state
+
+**Params**
+
+- presence `String` - Valid values include 'idle' and 'active'. There may be more but they are missing from the API docs  
+- \[callback\] `function` - Optional callback with (err, allPresences)  
+
+<a name="Client#getStreamMembers"></a>
+##client.getStreamMembers(stream, callback)
+List members of a stream
+
+**Params**
+
+- stream `String` - Name of stream  
+- callback `function` - Callback with (err, members)  
+
+<a name="Client#updateMessage"></a>
+##client.updateMessage(opts, [callback])
+Updates a message subject or content
+
+**Params**
+
+- opts `Object` - Object of update options  
+  - message_id `String` | `Number` - Zulip message ID  
+  - \[subject\] `String` - New message subject  
+  - \[content\] `String` - New message content  
+- \[callback\] `function` - Optional callback with (err, response)  
 
 <a name="Client#event_registered"></a>
 ##event: "registered"
