@@ -290,6 +290,10 @@ Client.prototype.getStreams = function(callback) {
   });
 };
 
+/**
+ * List stream subscriptions
+ * @param  {Function} callback Callback with (err, subscriptions)
+ */
 Client.prototype.getSubscriptions = function(callback) {
   var self = this;
 
@@ -373,6 +377,10 @@ Client.prototype.updateSubscriptions = function(opts, callback) {
   });
 };
 
+/**
+ * Gets profile information such as max_message_id, pointer, and client_id
+ * @param  {Function} callback Callback with (err, response)
+ */
 Client.prototype.me = function(callback) {
   var self = this;
 
@@ -399,6 +407,11 @@ Client.prototype.me = function(callback) {
   });
 };
 
+/**
+ * Sets presence state
+ * @param {String}   presence Valid values include 'idle' and 'active'. There may be more but they are missing from the API docs
+ * @param {Function} [callback] Optional callback with (err, allPresences)
+ */
 Client.prototype.setPresence = function(presence, callback) {
   var self = this;
 
