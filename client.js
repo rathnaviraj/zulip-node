@@ -23,7 +23,8 @@ function Client(email, apiKey) {
     register: 'https://api.zulip.com/v1/register',
     events: 'https://api.zulip.com/v1/events',
     streams: 'https://api.zulip.com/v1/streams',
-    subscriptions: 'https://api.zulip.com/v1/users/me/subscriptions'
+    subscriptions: 'https://api.zulip.com/v1/users/me/subscriptions',
+    presence: 'https://api.zulip.com/v1/users/me/presence'
   };
   this.queueId = null;
   this.lastEventId = -1;
@@ -309,6 +310,32 @@ Client.prototype.me = function(callback) {
   });
 };
 
+Client.prototype.setPresence = function(presence, callback) {
+  var self = this;
+
+  request.post(this.urls.presence, {
+    json: true,
+    auth: {
+      user: this.email,
+      pass: this.apiKey
+    },
+    form: {
+      status: presence
+    }
+  }, function(err, resp, json) {
+    if (err) {
+      if (callback) callback(err, null);
+      return self.emit('error', err);
+    }
+    else if (resp.statusCode !== 200) {
+      if (callback) callback(resp.body.msg, null);
+      return self.emit('error', resp.statusCode + ': ' + resp.body.msg);
+    }
+
+    if (callback)
+      callback(null, json.presences);
+  });
+};
 
 module.exports = Client;
 
