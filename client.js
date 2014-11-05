@@ -18,6 +18,7 @@ function Client(email, apiKey) {
   this.apiKey = apiKey;  
   this.urls = {
     users: 'https://api.zulip.com/v1/users',
+    me: 'https://api.zulip.com/v1/users/me',
     sendMessage: 'https://api.zulip.com/v1/messages',
     register: 'https://api.zulip.com/v1/register',
     events: 'https://api.zulip.com/v1/events',
@@ -279,6 +280,32 @@ Client.prototype.getSubscriptions = function(callback) {
     }
 
     callback(null, json.subscriptions);
+  });
+};
+
+Client.prototype.me = function(callback) {
+  var self = this;
+
+  if (!callback)
+    return self.emit('error', 'me requires a callback');
+
+  request.get(this.urls.me, {
+    json: true,
+    auth: {
+      user: this.email,
+      pass: this.apiKey
+    }
+  }, function(err, resp, json) {
+    if (err) {
+      callback(err, null);
+      return self.emit('error', err);
+    }
+    else if (resp.statusCode !== 200) {
+      callback(resp.body.msg, null);
+      return self.emit('error', resp.statusCode + ': ' + resp.body.msg);
+    }
+
+    callback(null, json);
   });
 };
 
