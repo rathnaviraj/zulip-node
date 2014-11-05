@@ -284,6 +284,63 @@ Client.prototype.getSubscriptions = function(callback) {
   });
 };
 
+/**
+ * Adds or removes stream subscriptions
+ * @param  {Object}   opts     Object containing subscription additions and deletions
+ * @param {Array} opts.additions Array of streams to subscribe to
+ * @param {Array} opts.deletions Array of streams to unsubscribe from
+ * @param  {Function} [callback] Optional callback with (err, response)
+ */
+Client.prototype.updateSubscriptions = function(opts, callback) {
+  var self = this,
+      form = {},
+      additions = opts.additions,
+      deletions = opts.deletions,
+      qs;
+
+  // We have to do some funky stuff here to transform the arrays into weird query strings
+
+  if (additions) {
+    if (!Array.isArray(additions))
+      additions = [additions];
+
+    additions = additions.map(function(addition) {
+      return '{"name":"' + addition + '"}';
+    });
+
+    additions = 'add=[' + additions.join(',') + ']';
+  }
+
+  if (deletions) {
+    if (!Array.isArray(deletions))
+      deletions = [deletions];
+
+    deletions = 'delete=["' + deletions.join(',') + '"]';
+  }
+
+  qs = [additions, deletions].join('&');
+
+  request.patch(this.urls.subscriptions, {
+    auth: {
+      user: this.email,
+      pass: this.apiKey
+    },
+    body: qs
+  }, function(err, resp, json) {
+    if (err) {
+      if (callback) callback(err, null);
+      return self.emit('error', err);
+    }
+    else if (resp.statusCode !== 200) {
+      if (callback) callback(resp.body.msg, null);
+      return self.emit('error', resp.statusCode + ': ' + resp.body.msg);
+    }
+
+    if (callback)
+      callback(null, json);
+  });
+};
+
 Client.prototype.me = function(callback) {
   var self = this;
 
