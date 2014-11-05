@@ -394,6 +394,38 @@ Client.prototype.setPresence = function(presence, callback) {
   });
 };
 
+/**
+ * List members of a stream
+ * @param  {String}   stream   Name of stream
+ * @param  {Function} callback Callback with (err, members)
+ */
+Client.prototype.getStreamMembers = function(stream, callback) {
+  var self = this,
+      url = this.urls.streams + '/' + stream + '/members';
+
+  if (!callback)
+    return self.emit('error', 'getStreamMembers requires a callback');
+
+  request.get(url, {
+    json: true,
+    auth: {
+      user: this.email,
+      pass: this.apiKey
+    }
+  }, function(err, resp, json) {
+    if (err) {
+      callback(err, null);
+      return self.emit('error', err);
+    }
+    else if (resp.statusCode !== 200) {
+      callback(resp.body.msg, null);
+      return self.emit('error', resp.statusCode + ': ' + resp.body.msg);
+    }
+
+    callback(null, json);
+  });
+};
+
 module.exports = Client;
 
 /**
