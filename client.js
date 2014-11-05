@@ -130,6 +130,38 @@ Client.prototype.registerQueue = function(opts, watch, watchOpts) {
 };
 
 /**
+ * Deregisters from a queue
+ * @param  {String}   queueId  Queue ID
+ * @param  {Function} [callback] Optional callback with (err, response)
+ */
+Client.prototype.deregisterQueue = function(queueId, callback) {
+  var self = this;
+
+  request.del(this.urls.events, {
+    json: true,
+    auth: {
+      user: this.email,
+      pass: this.apiKey
+    },
+    form: {
+      queue_id: queueId
+    }
+  }, function(err, resp, json) {
+    if (err) {
+      if (callback) callback(err, null);
+      return self.emit('error', err);
+    }
+    else if (resp.statusCode !== 200) {
+      if (callback) callback(resp.body.msg, null);
+      return self.emit('error', resp.body.msg);
+    }
+
+    if (callback)
+      callback(null, json);
+  });
+};
+
+/**
  * Gets a list of all Zulip users in the realm
  * @param  {Function} callback Callback function with (err, users) params
  */
