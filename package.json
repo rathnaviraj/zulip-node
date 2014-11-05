@@ -1,6 +1,6 @@
 {
   "name": "zulip-node",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Node bindings for Zulip API",
   "keywords": ["zulip"],
   "license": "MIT",
@@ -29,6 +29,6 @@
     "jsdoc-to-markdown": "^0.5.9"
   },
   "scripts": {
-    "docs": "jsdoc2md -t README.hbs client.js > README.md"
+    "docs": "jsdoc2md -t jsdoc2md/README.hbs client.js > README.md"
   }
 }
