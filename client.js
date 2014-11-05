@@ -19,7 +19,7 @@ function Client(email, apiKey) {
   this.urls = {
     users: 'https://api.zulip.com/v1/users',
     me: 'https://api.zulip.com/v1/users/me',
-    sendMessage: 'https://api.zulip.com/v1/messages',
+    messages: 'https://api.zulip.com/v1/messages',
     register: 'https://api.zulip.com/v1/register',
     events: 'https://api.zulip.com/v1/events',
     streams: 'https://api.zulip.com/v1/streams',
@@ -45,7 +45,7 @@ util.inherits(Client, EventEmitter);
 Client.prototype.sendMessage = function(opts, callback) {
   var self = this;
 
-  request.post(this.urls.sendMessage, {
+  request.post(this.urls.messages, {
     json:true,
     auth: { user: this.email, pass: this.apiKey },
     form: opts
@@ -455,6 +455,39 @@ Client.prototype.getStreamMembers = function(stream, callback) {
     }
 
     callback(null, json);
+  });
+};
+
+/**
+ * Updates a message subject or content
+ * @param  {Object}   opts     Object of update options
+ * @param {String | Number} opts.message_id Zulip message ID
+ * @param {String} [opts.subject] New message subject
+ * @param {String} [opts.content] New message content
+ * @param  {Function} [callback] Optional callback with (err, response)
+ */
+Client.prototype.updateMessage = function(opts, callback) {
+  var self = this;
+
+  request.patch(this.urls.messages, {
+    json: true,
+    auth: {
+      user: this.email,
+      pass: this.apiKey
+    },
+    form: opts
+  }, function(err, resp, json) {
+    if (err) {
+      if (callback) callback(err, null);
+      return self.emit('error', err);
+    }
+    else if (resp.statusCode !== 200) {
+      if (callback) callback(resp.body.msg, null);
+      return self.emit('error', resp.body.msg);
+    }
+
+    if (callback)
+      callback(null, json);
   });
 };
 
