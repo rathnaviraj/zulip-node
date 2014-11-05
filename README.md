@@ -1,10 +1,41 @@
-zulip-node
-=====
+# zulip-node
 
-Zulip API for node.js
+Zulip API bindings for node.js. Includes most of the available API calls, though the API docs from Zulip are quite sparse.
 
+Available API docs are [here](https://gist.github.com/vitosamson/6c596975c68122f95f38)
 
-## API Reference
+## Example
+
+Here's an example of registering a queue and polling for messages:
+
+```js
+var zulip = require('zulip-node'),
+    client = new zulip(process.env.ZULIP_EMAIL, process.env.ZULIP_API_KEY);
+
+client.registerQueue({
+  event_types: ['message']
+}, true);
+
+client.on('registered', function() {
+  console.log('registered');
+})
+.on('message', function(msg) {
+  // only message events will be received here
+})
+.on('event', function(evt) {
+  // all queue events will be received here
+})
+.on('error', function(err) {
+  console.error(err);
+});
+```
+
+## Credit
+
+This project was forked from [paulvstheworld/zulip-node](https://github.com/paulvstheworld/zulip-node).
+
+---
+
 <a name="Client"></a>
 #class: Client
 Client constructor
@@ -16,7 +47,7 @@ Client constructor
   * [client.sendMessage(opts, [callback])](#Client#sendMessage)
   * [client.sendStreamMessage(opts, callback)](#Client#sendStreamMessage)
   * [client.sendPrivateMessage(opts, callback)](#Client#sendPrivateMessage)
-  * [client.registerQueue(opts, event_types, [watch], [watchOpts])](#Client#registerQueue)
+  * [client.registerQueue(opts, [watch], [watchOpts])](#Client#registerQueue)
   * [client.deregisterQueue(queueId, [callback])](#Client#deregisterQueue)
   * [client.getUsers(callback)](#Client#getUsers)
   * [client.getEvents([watchOpts])](#Client#getEvents)
@@ -77,13 +108,14 @@ Send a private message
 - callback `function` - Optional callback function with (err, results) params  
 
 <a name="Client#registerQueue"></a>
-##client.registerQueue(opts, event_types, [watch], [watchOpts])
+##client.registerQueue(opts, [watch], [watchOpts])
 Register to receive Zulip events
 
 **Params**
 
 - opts `Object` - Register options per https://zulip.com/api/endpoints/  
-- event_types `Array` - A JSON-encoded array indicating which types of events you're interested in. Values include message, subscriptions, realm_user,  
+  - \[event_types=all\] `Array` - A JSON-encoded array indicating which types of events you're interested in. Values include message, subscriptions, realm_user, pointer  
+  - \[apply_markdown=false\] `Boolean` - Set to “true” if you would like the content to be rendered in HTML format  
 - \[watch=false\] `Boolean` - If true, will automatically poll for events  
 - \[watchOpts\] `Object` - Optional set of options to be passed to getEvents while polling  
 

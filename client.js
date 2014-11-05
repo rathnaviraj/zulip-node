@@ -97,7 +97,8 @@ Client.prototype.sendPrivateMessage = function(opts, callback) {
 /**
  * Register to receive Zulip events
  * @param  {Object} opts      Register options per https://zulip.com/api/endpoints/
- * @param {Array} event_types A JSON-encoded array indicating which types of events you're interested in. Values include message, subscriptions, realm_user, 
+ * @param {Array} [opts.event_types = all] A JSON-encoded array indicating which types of events you're interested in. Values include message, subscriptions, realm_user, pointer
+ * @param {Boolean} [opts.apply_markdown = false] Set to “true” if you would like the content to be rendered in HTML format
  * @param  {Boolean} [watch = false]     If true, will automatically poll for events
  * @param  {Object} [watchOpts] Optional set of options to be passed to getEvents while polling
  */

@@ -1,16 +1,25 @@
 {
   "name": "zulip-node",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Node bindings for Zulip API",
-  "author": "Paul <paulvstheworld@gmail.com>",
-  "private": true,
+  "keywords": ["zulip"],
+  "license": "MIT",
+  "author": "Vito <vslavilla@gmail.com>",
+  "contributors": [{
+    "name": "Paul",
+    "github": "https://github.com/paulvstheworld"
+  }],
+  "private": false,
   "main": "./client.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/paulvstheworld/zulip-node.git"
+    "url": "https://github.com/vitosamson/zulip-node.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vitosamson/zulip-node/issues"
   },
   "dependencies": {
-    "request": "2.27.0"
+    "request": "^2.27.0"
   },
   "engines": {
     "node": ">=0.10"

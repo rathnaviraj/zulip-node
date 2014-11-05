@@ -1,8 +1,39 @@
-zulip-node
-=====
+# zulip-node
 
-Zulip API for node.js
+Zulip API bindings for node.js. Includes most of the available API calls, though the API docs from Zulip are quite sparse.
 
+Available API docs are [here](https://gist.github.com/vitosamson/6c596975c68122f95f38)
 
-## API Reference
+## Example
+
+Here's an example of registering a queue and polling for messages:
+
+```js
+var zulip = require('zulip-node'),
+    client = new zulip(process.env.ZULIP_EMAIL, process.env.ZULIP_API_KEY);
+
+client.registerQueue({
+  event_types: ['message']
+}, true);
+
+client.on('registered', function() {
+  console.log('registered');
+})
+.on('message', function(msg) {
+  // only message events will be received here
+})
+.on('event', function(evt) {
+  // all queue events will be received here
+})
+.on('error', function(err) {
+  console.error(err);
+});
+```
+
+## Credit
+
+This project was forked from [paulvstheworld/zulip-node](https://github.com/paulvstheworld/zulip-node).
+
+---
+
 {{>main}}
