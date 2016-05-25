@@ -3,29 +3,39 @@
 var querystring = require('querystring'),
     request = require('request'),
     EventEmitter = require('events').EventEmitter,
-    util = require('util');
+    util = require('util'), os = require('os');
+
+/** Default Zulip API server location **/ 
+var site ="api.zulip.com";
 
 /**
  * @class  Client constructor
  * @param {string} email  Zulip account address
  * @param {string} apiKey Zulip API key
+ * @param {string} site Zulip server address
  */
-function Client(email, apiKey) {
+function Client(email, apiKey, site) {
   // Call the EventEmitter constructor on this
   EventEmitter.call(this);
 
   this.email = email;
-  this.apiKey = apiKey;  
+  this.apiKey = apiKey;
+
+  if(typeof site!='undefined'){
+	this.site = site;
+  }
+  
   this.urls = {
-    users: 'https://api.zulip.com/v1/users',
-    me: 'https://api.zulip.com/v1/users/me',
-    messages: 'https://api.zulip.com/v1/messages',
-    register: 'https://api.zulip.com/v1/register',
-    events: 'https://api.zulip.com/v1/events',
-    streams: 'https://api.zulip.com/v1/streams',
-    subscriptions: 'https://api.zulip.com/v1/users/me/subscriptions',
-    presence: 'https://api.zulip.com/v1/users/me/presence'
+    users: 'https://'+this.site+'/api/v1/users',
+    me: 'https://'+this.site+'/api/v1/users/me',
+    messages: 'https://'+this.site+'/api/v1/messages',
+    register: 'https://'+this.site+'/api/v1/register',
+    events: 'https://'+this.site+'/api/v1/events',
+    streams: 'https://'+this.site+'/api/v1/streams',
+    subscriptions: 'https://'+this.site+'/api/v1/users/me/subscriptions',
+    presence: 'https://'+this.site+'/api/v1/users/me/presence'
   };
+
   this.queueId = null;
   this.lastEventId = -1;
 }
@@ -48,7 +58,10 @@ Client.prototype.sendMessage = function(opts, callback) {
   request.post(this.urls.messages, {
     json:true,
     auth: { user: this.email, pass: this.apiKey },
-    form: opts
+    form: opts,
+    headers: {
+      'User-Agent': self.getUserAgent()
+    }
   }, function(err, resp, json) {
     if (err) {
       self.emit('error', err);
@@ -66,6 +79,41 @@ Client.prototype.sendMessage = function(opts, callback) {
       callback(null, json);
   });
 };
+
+/**
+ * Get messages
+ * @param  {Object}   opts     Message options per https://zulip.com/api/endpoints/
+ * @param {Array} opts.narrow Array of streams and subjects to narrow down the messages scope
+ * @param {Integer} opts.num_before 
+ * @param {Integer} opts.num_after 
+ * @param {Integer} opts.anchor Anchor point of the last message
+ * @param {Boolean} opts.apply_markdown Indicates whather message contents returned with html wrapped of not
+ * @param  {Function} [callback] callback function with (err, results) params
+ */
+Client.prototype.getMessages = function(opts, callback) {
+  var self = this;
+  request.get(this.urls.messages, {
+    json: true,
+    auth: {
+      user: this.email,
+      pass: this.apiKey
+    },
+    qs: opts
+  }, function(err, resp, json) {
+    if (err) {
+      if (callback) callback(err, null);
+      return self.emit('error', err);
+    }
+    else if (resp.statusCode !== 200) {
+      if (callback) callback(resp.body.msg, null);
+      return self.emit('error', resp.body.msg);
+    }
+
+    if (callback)
+      callback(null, json);
+  });
+};
+
 
 /**
  * Send a stream message
@@ -178,6 +226,47 @@ Client.prototype.getUsers = function(callback) {
       user: this.email,
       pass: this.apiKey
     },
+  }, function(err, resp, json) {
+    if(!err && resp.statusCode == 200) {
+      return callback(null, json);
+    }
+    else {
+      callback(err, null);
+    }
+
+    if (err) {
+      self.emit('error', err);
+      return callback(err, null);
+    }
+    else if (resp.status !== 200) {
+      self.emit('error', resp.statusCode + ': ' + resp.body.msg);
+      return callback(resp.body, null);
+    }
+  });
+};
+
+/**
+ * Create a Zulip user in the realm
+ * @param  {Object}   opts New user details per https://zulip.com/api/endpoints/
+ * @param {String} opts.email Email of the new user 
+ * @param {String} opts.password Password of the new user
+ * @param {String} opts.full_name Full name of the new user.
+ * @param {String} opts.short_name Short name of the new user.
+ * @param  {Function} callback Callback function with (err, users) params
+ */
+Client.prototype.createUser = function(opts, callback) {
+  var self = this;
+
+  if (!callback)
+    return self.emit('error', 'createUser requires a callback');
+
+  request.post(this.urls.users, {
+    json: true,
+    auth: {
+      user: this.email,
+      pass: this.apiKey
+    },
+    form: opts
   }, function(err, resp, json) {
     if(!err && resp.statusCode == 200) {
       return callback(null, json);
@@ -503,6 +592,13 @@ Client.prototype.updateMessage = function(opts, callback) {
     if (callback)
       callback(null, json);
   });
+};
+
+/**
+ * Returns the user agent string
+ */
+Client.prototype.getUserAgent = function() {
+  return 'ZulipNode ('+os.platform()+'; '+os.release()+')';
 };
 
 module.exports = Client;
