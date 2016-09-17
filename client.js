@@ -29,6 +29,7 @@ function Client(email, apiKey, site) {
     users: 'https://'+this.site+'/api/v1/users',
     me: 'https://'+this.site+'/api/v1/users/me',
     messages: 'https://'+this.site+'/api/v1/messages',
+    latest_messages: 'https://'+this.site+'/api/v1/messages/messages/latest',
     register: 'https://'+this.site+'/api/v1/register',
     events: 'https://'+this.site+'/api/v1/events',
     streams: 'https://'+this.site+'/api/v1/streams',
@@ -594,7 +595,45 @@ Client.prototype.updateMessage = function(opts, callback) {
   });
 };
 
+
 /**
+ * Subscribes users to streams, will create the stream if not exists
+ * @param  {Object}   opts     Object of update options
+ * @param {Boolean} opts.announce stream should be announced or not
+ * @param {Boolean} opts.invite_only can be subscribed only if invited 
+ * @param {String} [opts.principals]  array of user ids to be subscribed
+ * @param {Object} [opts.subscriptions] object (eg: [{"name":"SampleStream"}]) array of stream names to be subscribed or created
+ * @param  {Function} [callback] Optional callback with (err, response)
+ */
+Client.prototype.doSubscribe = function(opts, callback) {
+  var self = this;
+
+  request.post(this.urls.subscriptions, {
+    json: true,
+    auth: {
+      user: this.email,
+      pass: this.apiKey
+    },
+    form: opts
+  }, function(err, resp, json) {
+    if (err) {
+      if (callback) callback(err, null);
+      return self.emit('error', err);
+    }
+    else if (resp.statusCode !== 200) {
+      if (callback) callback(resp.body.msg, null);
+      return self.emit('error', resp.statusCode + ': ' + resp.body.msg);
+    }
+
+    if (callback)
+      callback(null, json.presences);
+  });
+};
+
+
+
+/**
+ * 
  * Returns the user agent string
  */
 Client.prototype.getUserAgent = function() {
